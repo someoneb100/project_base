@@ -14,6 +14,7 @@
 #include <rg/Box.h>
 
 #include <iostream>
+#include <rg/Object.h>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -75,13 +76,12 @@ int main() {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
+    stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
 
     {
-
         //TODO
-
+        Object backpack("resources/objects/backpack/backpack.obj");
         // render loop
         // -----------
         while (!glfwWindowShouldClose(window)) {
@@ -94,9 +94,9 @@ int main() {
             glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
             //TODO
-
+            backpack.setProjectionView(getPerspective(),camera.GetViewMatrix());
+            backpack.render(glm::mat4(1.0f));
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
             // -------------------------------------------------------------------------------

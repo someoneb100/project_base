@@ -88,7 +88,7 @@ protected:
         shader->use();
         shader->setMat4("view", view);
     }
-    inline void setProjection(Shader* shader, const glm::mat4& projection){
+    void setProjection(Shader* shader, const glm::mat4& projection){
         shader->use();
         shader->setMat4("projection", projection);
     }
