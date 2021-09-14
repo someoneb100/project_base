@@ -17,8 +17,6 @@ class Shader {
     unsigned int m_Id;
 public:
     Shader(std::string vertexShaderPath, std::string fragmentShaderPath) {
-        appendShaderFolderIfNotPresent(vertexShaderPath);
-        appendShaderFolderIfNotPresent(fragmentShaderPath);
         // build and compile our shader program
         // ------------------------------------
         // vertex shader
@@ -132,10 +130,11 @@ public:
         glUniformMatrix4fv(glGetUniformLocation(m_Id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
     void deleteProgram() {
-        glDeleteProgram(m_Id);
-        m_Id = 0;
+        if(m_Id != 0) {
+            glDeleteProgram(m_Id);
+            m_Id = 0;
+        }
     }
-
 
 
 };
