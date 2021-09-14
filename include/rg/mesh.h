@@ -29,6 +29,7 @@ public:
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
+    std::string prefix;
 
     Mesh(const std::vector<Vertex>& vs, const std::vector<unsigned int>& ind,
          const std::vector<Texture>& tex)
@@ -61,7 +62,7 @@ public:
                 ASSERT(false, "Unknown texture type");
             }
             name.append(number);
-            shader.setInt(name, i); // texture_diffuse1
+            shader.setInt(prefix + name, i); // texture_diffuse1
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
         }
 

@@ -81,7 +81,36 @@ int main() {
 
     {
         //TODO
+        //backpack
         Object backpack("resources/objects/backpack/backpack.obj");
+        backpack.setDirectionalLight(
+                    glm::vec3(-0.2f, -1.0f, -0.3f),
+                    glm::vec3(0.05f),
+                    glm::vec3(0.4f),
+                    glm::vec3(0.5f)
+                );
+        backpack.setSpotLight(
+                glm::vec3(0.0f),
+                glm::vec3(1.0f),
+                glm::vec3(1.0f),
+                1.0f, 0.09f, 0.032f,
+                glm::cos(glm::radians(12.5f)),
+                glm::cos(glm::radians(15.0f))
+                );
+
+        //lights
+        glm::vec3 pointLightPositions[] = {
+                glm::vec3( 0.7f,  0.2f,  2.0f),
+                glm::vec3( 2.3f, -3.3f, -4.0f),
+                glm::vec3(-4.0f,  2.0f, -12.0f),
+                glm::vec3( 0.0f,  0.0f, -3.0f)
+        };
+        LightCube lc;
+        for(unsigned i = 0u; i != 4u; ++i) {
+            backpack.setPointLight(i, lc);
+            backpack.setPointLightPosition(i, pointLightPositions[i]);
+        }
+
         // render loop
         // -----------
         while (!glfwWindowShouldClose(window)) {
@@ -94,8 +123,23 @@ int main() {
             glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
             //TODO
+
+            //loading lights
+            lc.setProjectionView(getPerspective(), camera.GetViewMatrix());
+            for(unsigned i = 0u; i != 4u; ++i){
+                glm::mat4 model(1.0f);
+                model = glm::translate(model, pointLightPositions[i]);
+                model = glm::scale(model, glm::vec3(0.2));
+                lc.render(model);
+            }
+
+
+
             backpack.setProjectionView(getPerspective(),camera.GetViewMatrix());
+            backpack.setViewPos(camera.Position);
+            backpack.setSpotLightPosition(camera.Position, camera.Front);
             backpack.render(glm::mat4(1.0f));
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

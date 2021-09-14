@@ -34,6 +34,10 @@ public:
         }
     }
 
+    void SetTextureNamePrefix(std::string prefix){
+        for(Mesh& mesh : meshes) mesh.prefix = prefix;
+    }
+
 private:
     void loadModel(std::string path) {
         Assimp::Importer importer;
