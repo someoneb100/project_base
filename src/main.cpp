@@ -42,7 +42,7 @@ float lastFrame = 0.0f;
 glm::mat4 getPerspective(){
         return glm::perspective(glm::radians(camera.Zoom), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
 }
-
+bool mouseInScreen = true;
 int main() {
     // glfw: initialize and configure
     // ------------------------------
@@ -201,4 +201,9 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
 
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
+        if(mouseInScreen) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        mouseInScreen = !mouseInScreen;
+    }
 }
