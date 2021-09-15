@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <rg/Object.h>
+#include <rg/Skybox.h>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -76,13 +77,13 @@ int main() {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(false);
     glEnable(GL_DEPTH_TEST);
 
     {
         //TODO
         //backpack
-        Object backpack("resources/objects/backpack/backpack.obj");
+        Object backpack("resources/objects/cyborg/cyborg.obj");
         backpack.setDirectionalLight(
                     glm::vec3(-0.2f, -1.0f, -0.3f),
                     glm::vec3(0.05f),
@@ -140,7 +141,11 @@ int main() {
             backpack.setProjectionView(getPerspective(),camera.GetViewMatrix());
             backpack.setViewPos(camera.Position);
             backpack.setSpotLightPosition(camera.Position, camera.Front);
-            backpack.render(glm::mat4(1.0f));
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::scale(model,glm::vec3(0.5));
+            backpack.render(model);
+
+            Skybox::getSkybox().render(getPerspective(),camera.GetViewMatrix());
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
             // -------------------------------------------------------------------------------

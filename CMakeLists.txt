@@ -42,7 +42,7 @@ include_directories(${CMAKE_BINARY_DIR}/configuration)
 
 include_directories(include/)
 add_executable(${PROJECT_NAME}
-        ${SOURCES} include/rg/Object.h)
+        ${SOURCES} include/rg/Object.h include/rg/Skybox.h)
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 

@@ -64,6 +64,7 @@ public:
             name.append(number);
             shader.setInt(prefix + name, i); // texture_diffuse1
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
+
         }
 
         glBindVertexArray(VAO);
