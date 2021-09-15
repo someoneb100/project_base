@@ -79,7 +79,8 @@ int main() {
     }
     stbi_set_flip_vertically_on_load(false);
     glEnable(GL_DEPTH_TEST);
-
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     {
         //TODO
         //backpack
@@ -98,7 +99,21 @@ int main() {
                 glm::cos(glm::radians(12.5f)),
                 glm::cos(glm::radians(15.0f))
                 );
-
+        ComplexBox cb;
+        cb.setDirectionalLight(
+                glm::vec3(-0.2f, -1.0f, -0.3f),
+                glm::vec3(0.05f),
+                glm::vec3(0.4f),
+                glm::vec3(0.5f)
+        );
+        cb.setSpotLight(
+                glm::vec3(0.0f),
+                glm::vec3(1.0f),
+                glm::vec3(1.0f),
+                1.0f, 0.09f, 0.032f,
+                glm::cos(glm::radians(12.5f)),
+                glm::cos(glm::radians(15.0f))
+        );
         //lights
         glm::vec3 pointLightPositions[] = {
                 glm::vec3( 0.7f,  0.2f,  2.0f),
@@ -110,6 +125,8 @@ int main() {
         for(unsigned i = 0u; i != 4u; ++i) {
             backpack.setPointLight(i, lc);
             backpack.setPointLightPosition(i, pointLightPositions[i]);
+            cb.setPointLight(i, lc);
+            cb.setPointLightPosition(i, pointLightPositions[i]);
         }
 
         // render loop
@@ -132,7 +149,7 @@ int main() {
             for(unsigned i = 0u; i != 4u; ++i){
                 glm::mat4 model(1.0f);
                 model = glm::translate(model, pointLightPositions[i]);
-                model = glm::scale(model, glm::vec3(0.2));
+                model = glm::scale(model, glm::vec3(0.2f));
                 lc.render(model);
             }
 
@@ -144,6 +161,14 @@ int main() {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::scale(model,glm::vec3(0.5));
             backpack.render(model);
+
+            cb.setProjectionView(getPerspective(),camera.GetViewMatrix());
+            cb.setViewPos(camera.Position);
+            cb.setSpotLightPosition(camera.Position, camera.Front);
+            glm::mat4 model2 = glm::mat4(1.0f);
+            model2 = glm::translate(model2,glm::vec3(5.0));
+            model2 = glm::scale(model2,glm::vec3(2.0));
+            cb.render(model2);
 
             Skybox::getSkybox().render(getPerspective(),camera.GetViewMatrix());
 
