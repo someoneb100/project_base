@@ -74,12 +74,21 @@ private:
 
         std::vector<std::string> faces
                 {
-                        "resources/textures/skybox/right.jpg",
-                        "resources/textures/skybox/left.jpg",
-                        "resources/textures/skybox/top.jpg",
-                        "resources/textures/skybox/bottom.jpg",
-                        "resources/textures/skybox/front.jpg",
-                        "resources/textures/skybox/back.jpg"
+                       /* "resources/textures/skybox/learnOpenGL/right.jpg",
+                        "resources/textures/skybox/learnOpenGL/left.jpg",
+                        "resources/textures/skybox/learnOpenGL/top.jpg",
+                        "resources/textures/skybox/learnOpenGL/bottom.jpg",
+                        "resources/textures/skybox/learnOpenGL/front.jpg",
+                        "resources/textures/skybox/learnOpenGL/back.jpg"*/
+
+                        "resources/textures/skybox/Maskonaive2/posx.jpg",
+                        "resources/textures/skybox/Maskonaive2/negx.jpg",
+                        "resources/textures/skybox/Maskonaive2/posy.jpg",
+                        "resources/textures/skybox/Maskonaive2/negy.jpg",
+                        "resources/textures/skybox/Maskonaive2/posz.jpg",
+                        "resources/textures/skybox/Maskonaive2/negz.jpg"
+
+
                 };
         loadCubemap(faces);
         skyboxShader.use();
