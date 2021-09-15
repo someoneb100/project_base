@@ -28,8 +28,8 @@ void processInput(GLFWwindow *window);
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+unsigned int SCR_WIDTH = 800;
+unsigned int SCR_HEIGHT = 600;
 
 Camera camera(glm::vec3(0.0f,2.0f,5.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -40,7 +40,7 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-glm::mat4 getPerspective(){
+inline glm::mat4 getPerspective(){
         return glm::perspective(glm::radians(camera.Zoom), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
 }
 bool mouseInScreen = true;
@@ -58,7 +58,7 @@ int main() {
 
     // glfw window creation
     // --------------------
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Our Project", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -82,14 +82,23 @@ int main() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     {
-        //TODO
+        //utility things
+        const auto x_axis = glm::vec3(1.0f, 0.0f, 0.0f);
+        const auto y_axis = glm::vec3(0.0f, 1.0f, 0.0f);
+        const auto z_axis = glm::vec3(0.0f, 0.0f, 1.0f);
+        const auto identity = glm::mat4(1.0f);
 
-        std::vector<glm::vec3> boxPositions({
+
+        const std::vector<glm::vec3> boxPositions({
             glm::vec3(4.0f, 0.0f, 4.0f),
             glm::vec3(4.0f, 0.0f, -4.0f),
             glm::vec3(-4.0f, 0.0f, 4.0f),
             glm::vec3(-4.0f, 0.0f, -4.0f)
         });
+
+        const auto rcPosition = glm::vec3(0.0f,3.0f,3.0f);
+
+
         //cyborg
         Object cyborg("resources/objects/cyborg/cyborg.obj");
 
@@ -158,10 +167,11 @@ int main() {
         Object::setPointLight(4, lc_red);
         cb.setPointLight(4, lc_red);
         sb.setPointLight(4, lc_red);
+
         // render loop
         // -----------
         while (!glfwWindowShouldClose(window)) {
-            float currentFrame = glfwGetTime();
+            const float currentFrame = glfwGetTime();
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
 
@@ -170,64 +180,74 @@ int main() {
             glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+            const auto perspective = getPerspective();
+            const auto view = camera.GetViewMatrix();
 
-            //TODO
-
-            //loading lights
-            lc.setProjectionView(getPerspective(), camera.GetViewMatrix());
+            //basic lights
+            lc.setProjectionView(perspective, view);
             for(unsigned i = 0u; i != 4u; ++i){
-                glm::mat4 model(1.0f);
-                model = glm::rotate(model,currentFrame,glm::vec3(0.0,1.0,0.0));
+                auto model = glm::rotate(identity, currentFrame, y_axis);
                 model = glm::translate(model, pointLightPositions[i]);
                 model = glm::scale(model, glm::vec3(0.2f));
                 lc.render(model);
-                auto newPosition = glm::vec3 (model*glm::vec4(pointLightPositions[i],1.0));
+                auto newPosition = glm::vec3(model*glm::vec4(pointLightPositions[i],1.0f));
                 cb.setPointLightPosition(i, newPosition);
                 sb.setPointLightPosition(i, newPosition);
                 Object::setPointLightPosition(i, newPosition);
             }
+
+
             {
-                glm::mat4 model(1.0f);
-                glm::vec3 start = glm::vec3(0.0f,3.0f,3.0f);
-                model = glm::rotate(model, currentFrame, glm::vec3(1.0, 0.0, 0.0));
-                model = glm::translate(model, start);
+                //red light
+                lc_red.setProjectionView(perspective, view);
+
+                auto model = glm::rotate(identity, currentFrame, x_axis);
+                model = glm::translate(model, rcPosition);
                 model = glm::scale(model, glm::vec3(0.05f));
                 lc_red.render(model);
-                auto newPosition = glm::vec3(model * glm::vec4(start, 1.0));
+                const auto newPosition = glm::vec3(model * glm::vec4(rcPosition, 1.0f));
                 cb.setPointLightPosition(4, newPosition);
                 sb.setPointLightPosition(4, newPosition);
                 Object::setPointLightPosition(4, newPosition);
             }
 
-            Object::setProjectionView(getPerspective(),camera.GetViewMatrix());
+
+            //all models
+            Object::setProjectionView(perspective, view);
             Object::setViewPos(camera.Position);
             Object::setSpotLightPosition(camera.Position, camera.Front);
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::scale(model,glm::vec3(0.8));
-            cyborg.render(model);
 
-            glm::mat4 model1 = glm::mat4(1.0f);
-            model1 = glm::rotate(model1,currentFrame/2.13f,glm::vec3(0.0,1.0,0.0));
-            model1 = glm::translate(model1,glm::vec3(3.0,0.0,3.0));
-            model1 = glm::rotate(model1,glm::radians(-90.0f),glm::vec3(1.0,0.0,0.0));
-            model1 = glm::rotate(model1,glm::radians(130.0f),glm::vec3(0.0,0.0,1.0));
-            model1 = glm::scale(model1,glm::vec3(0.02));
-            duck.render(model1);
+            //cyborg
+            cyborg.render(glm::scale(identity, glm::vec3(0.8f)));
 
-            cb.setProjectionView(getPerspective(),camera.GetViewMatrix());
+
+            {
+                //duck
+                auto model = glm::rotate(identity, currentFrame / 2.13f, y_axis);
+                model = glm::translate(model, glm::vec3(3.0f, 0.0f, 3.0f));
+                model = glm::rotate(model, glm::radians(-90.0f), x_axis);
+                model = glm::rotate(model, glm::radians(130.0f), z_axis);
+                model = glm::scale(model, glm::vec3(0.02f));
+                duck.render(model);
+            }
+
+
+            //boxes
+            cb.setProjectionView(perspective, view);
             cb.setViewPos(camera.Position);
             cb.setSpotLightPosition(camera.Position, camera.Front);
-            sb.setProjectionView(getPerspective(),camera.GetViewMatrix());
+            sb.setProjectionView(perspective, view);
             sb.setViewPos(camera.Position);
             sb.setSpotLightPosition(camera.Position, camera.Front);
             for(auto& box : boxPositions) {
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, box);
+                auto model = glm::translate(identity, box);
                 sb.render(model);
-                model = glm::translate(model, glm::vec3(0.0f, 4.0f, 0.0f));
+                model = glm::translate(model, y_axis * 4.0f);
                 cb.render(model);
             }
-            Skybox::getSkybox().render(getPerspective(),camera.GetViewMatrix());
+
+            //skybox
+            Skybox::getSkybox().render(perspective, view);
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
             // -------------------------------------------------------------------------------
@@ -282,6 +302,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
