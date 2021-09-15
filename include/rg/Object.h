@@ -18,7 +18,7 @@ public:
     Object(std::string path, float shininess = 32.0f)
         : object(path), shininess(shininess){
         object.SetTextureNamePrefix("material.");
-        if(object_count == 0u) objectShader = new Shader("resources/shaders/model/1.model_loading.vs", "resources/shaders/model/1.model_loading.fs");
+        if(object_count == 0u) objectShader = new Shader("resources/shaders/model/model.vs", "resources/shaders/model/model.fs");
         ++object_count;
     }
 
