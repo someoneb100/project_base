@@ -15,9 +15,15 @@ enum Camera_Movement {
     RIGHT
 };
 
+enum Camera_Roll {
+    ROLL_LEFT,
+    ROLL_RIGHT
+};
+
 // Default camera values
 const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
+const float ROLL        =  0.0f;
 const float SPEED       =  2.5f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
@@ -36,27 +42,30 @@ public:
     // euler Angles
     float Yaw;
     float Pitch;
+    float Roll;
     // camera options
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
 
     // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH,float roll = ROLL) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = position;
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
+        Roll = roll;
         updateCameraVectors();
     }
     // constructor with scalar values
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch, float roll) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = glm::vec3(posX, posY, posZ);
         WorldUp = glm::vec3(upX, upY, upZ);
         Yaw = yaw;
         Pitch = pitch;
+        Roll = roll;
         updateCameraVectors();
     }
 
@@ -79,7 +88,18 @@ public:
         if (direction == RIGHT)
             Position += Right * velocity;
     }
+    void ProcessRoll(Camera_Roll direction, float deltaTime){
+        float velocity = MovementSpeed * deltaTime;
+            float prevRoll = Roll;
+        if (direction == ROLL_LEFT)
+            Roll += velocity;
+        if (direction == ROLL_RIGHT)
+            Roll -= velocity;
+        Right = glm::vec3 (glm::rotate(glm::mat4(1.0),prevRoll-Roll,Front) * glm::vec4(Right,1.0));
+        Up =  glm::vec3 (glm::rotate(glm::mat4(1.0),prevRoll-Roll,Front) * glm::vec4(Up,1.0));
 
+        updateCameraVectors();
+    }
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {
@@ -102,6 +122,7 @@ public:
         updateCameraVectors();
     }
 
+
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void ProcessMouseScroll(float yoffset)
     {
@@ -123,7 +144,8 @@ private:
         front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
         Front = glm::normalize(front);
         // also re-calculate the Right and Up vector
-        Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+        glm::vec3 pomUp = glm::vec3 (glm::rotate(glm::mat4(1.0),Roll,Front) * glm::vec4(WorldUp,1.0));
+        Right = glm::normalize(glm::cross(Front, pomUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up    = glm::normalize(glm::cross(Right, Front));
     }
 };
