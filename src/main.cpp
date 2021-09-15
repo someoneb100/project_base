@@ -96,77 +96,60 @@ int main() {
             glm::vec3(-4.0f, 0.0f, -4.0f)
         });
 
-        const auto rcPosition = glm::vec3(0.0f,3.0f,3.0f);
-
-
-        //cyborg
-        Object cyborg("resources/objects/cyborg/cyborg.obj");
-
-        Object duck("resources/objects/duck/12248_Bird_v1_L2.obj");
-        Object::setDirectionalLight(
-                glm::vec3(-0.2f, -1.0f, -0.3f),
-                glm::vec3(0.05f),
-                glm::vec3(0.4f),
-                glm::vec3(0.5f)
-        );
-        Object::setSpotLight(
-                glm::vec3(0.0f),
-                glm::vec3(1.0f),
-                glm::vec3(1.0f),
-                1.0f, 0.09f, 0.032f,
-                glm::cos(glm::radians(12.5f)),
-                glm::cos(glm::radians(15.0f))
-        );
-
-        SimpleBox sb;
-        sb.setDirectionalLight(
-                glm::vec3(-0.2f, -1.0f, -0.3f),
-                glm::vec3(0.05f),
-                glm::vec3(0.4f),
-                glm::vec3(0.5f)
-        );
-        sb.setSpotLight(
-                glm::vec3(0.0f),
-                glm::vec3(1.0f),
-                glm::vec3(1.0f),
-                1.0f, 0.09f, 0.032f,
-                glm::cos(glm::radians(12.5f)),
-                glm::cos(glm::radians(15.0f))
-        );
-
-        ComplexBox cb;
-        cb.setDirectionalLight(
-                glm::vec3(-0.2f, -1.0f, -0.3f),
-                glm::vec3(0.05f),
-                glm::vec3(0.4f),
-                glm::vec3(0.5f)
-        );
-        cb.setSpotLight(
-                glm::vec3(0.0f),
-                glm::vec3(1.0f),
-                glm::vec3(1.0f),
-                1.0f, 0.09f, 0.032f,
-                glm::cos(glm::radians(12.5f)),
-                glm::cos(glm::radians(15.0f))
-        );
-        //lights
-        glm::vec3 pointLightPositions[] = {
+        const std::vector<glm::vec3> pointLightPositions({
                 glm::vec3( 2.0f,  2.0f,  2.0f),
                 glm::vec3( 2.3f, -3.3f, -4.0f),
                 glm::vec3(-4.0f,  2.0f, -6.0f),
                 glm::vec3( 0.0f,  0.0f, -3.0f)
-        };
+        });
+
+        const auto rcPosition = glm::vec3(0.0f,3.0f,3.0f);
+
+        //lights
+        const DirectionalLight directionalLight(
+                glm::vec3(-0.2f, -5.0f, -0.3f),
+                glm::vec3(0.05f),
+                glm::vec3(0.4f),
+                glm::vec3(0.5f)
+                );
+
+        const SpotLight spotLight(
+                glm::vec3(0.0f),
+                glm::vec3(1.0f),
+                glm::vec3(1.0f),
+                1.0f, 0.09f, 0.032f,
+                glm::cos(glm::radians(12.5f)),
+                glm::cos(glm::radians(15.0f))
+                );
+
+
+        Object cyborg("resources/objects/cyborg/cyborg.obj");
+        Object duck("resources/objects/duck/12248_Bird_v1_L2.obj");
+        Object watertower("resources/objects/watertower/old_water_tower_OBJ.obj");
+        Object::setDirectionalLight(directionalLight);
+        Object::setSpotLight(spotLight);
+
+        SimpleBox sb;
+        sb.setDirectionalLight(directionalLight);
+        sb.setSpotLight(spotLight);
+
+        ComplexBox cb;
+        cb.setDirectionalLight(directionalLight);
+        cb.setSpotLight(spotLight);
+        //lights
+
         LightCube lc;
-        for(unsigned i = 0u; i != 4u; ++i) {
+        for(unsigned i = 0u; i != pointLightPositions.size(); ++i) {
             Object::setPointLight(i, lc);
             cb.setPointLight(i, lc);
             sb.setPointLight(i, lc);
         }
+
         LightCube lc_red(glm::vec3(1.0f, 0.0f, 0.0f));
         lc_red.setK(1.0f, 0.007f, 0.0002f);
-        Object::setPointLight(4, lc_red);
-        cb.setPointLight(4, lc_red);
-        sb.setPointLight(4, lc_red);
+        Object::setPointLight(pointLightPositions.size(), lc_red);
+        cb.setPointLight(pointLightPositions.size(), lc_red);
+        sb.setPointLight(pointLightPositions.size(), lc_red);
 
         // render loop
         // -----------
@@ -176,8 +159,6 @@ int main() {
             lastFrame = currentFrame;
 
             processInput(window);
-
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             const auto perspective = getPerspective();
@@ -185,7 +166,7 @@ int main() {
 
             //basic lights
             lc.setProjectionView(perspective, view);
-            for(unsigned i = 0u; i != 4u; ++i){
+            for(unsigned i = 0u; i != pointLightPositions.size(); ++i){
                 auto model = glm::rotate(identity, currentFrame, y_axis);
                 model = glm::translate(model, pointLightPositions[i]);
                 model = glm::scale(model, glm::vec3(0.2f));
@@ -231,6 +212,13 @@ int main() {
                 duck.render(model);
             }
 
+            {
+                //watertower
+                auto model = glm::translate(identity, glm::vec3(-4.0f, 5.0f, -20.0f));
+                model = glm::scale(model, glm::vec3(0.5f));
+                watertower.render(model);
+            }
+
 
             //boxes
             cb.setProjectionView(perspective, view);
@@ -274,9 +262,9 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
 
-    if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        camera.ProcessRoll(ROLL_LEFT, deltaTime);
     if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera.ProcessRoll(ROLL_LEFT, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
         camera.ProcessRoll(ROLL_RIGHT, deltaTime);
 }
 

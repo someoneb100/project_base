@@ -7,6 +7,7 @@
 
 #include <rg/model.h>
 #include <rg/Shader.h>
+#include <rg/Light.h>
 
 
 class Object {
@@ -65,6 +66,10 @@ public:
         objectShader->setVec3(prefix + "specular", specular);
     }
 
+    static inline void setDirectionalLight(const DirectionalLight& light){
+        setDirectionalLight(light.direction, light.ambient, light.diffuse, light.specular);
+    }
+
     static void setPointLight(unsigned int num, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
                        float constant, float linear, float quadratic) {
         std::string prefix = "pointLights[" + std::to_string(num) + "].";
@@ -77,7 +82,7 @@ public:
         objectShader->setFloat(prefix + "quadratic", quadratic);
     }
 
-    static void setPointLight(unsigned int num, const LightCube& light){
+    static inline void setPointLight(unsigned int num, const LightCube& light){
         setPointLight(num, light.getLightColor() * light.getAmbient()
                 , light.getLightColor() * light.getDiffuse()
                 , light.getLightColor() * light.getSpecular()
@@ -103,6 +108,14 @@ public:
         objectShader->setFloat(prefix + "quadratic", quadratic);
         objectShader->setFloat(prefix + "cutOff", cutOff);
         objectShader->setFloat(prefix + "outerCutOff", outerCutOff);
+    }
+
+    static inline void setSpotLight(const SpotLight& light){
+        setSpotLight(
+                light.ambient, light.diffuse, light.specular,
+                light.constant, light.linear, light.quadratic,
+                light.cutOff, light.outerCutOff
+                );
     }
 
     static void setSpotLightPosition(const glm::vec3& position, const glm::vec3& direction){

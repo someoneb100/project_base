@@ -10,6 +10,7 @@
 #include <rg/Error.h>
 #include <rg/Shader.h>
 #include <rg/Texture2D.h>
+#include <rg/Light.h>
 
 class Cube{
 protected:
@@ -256,6 +257,10 @@ public:
         shader->setVec3(prefix + "specular", specular);
     }
 
+    inline void setDirectionalLight(const DirectionalLight& light){
+        setDirectionalLight(light.direction, light.ambient, light.diffuse, light.specular);
+    }
+
     void setPointLight(unsigned int num, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
                        float constant, float linear, float quadratic) {
         std::string prefix = "pointLights[" + std::to_string(num) + "].";
@@ -294,6 +299,14 @@ public:
         shader->setFloat(prefix + "quadratic", quadratic);
         shader->setFloat(prefix + "cutOff", cutOff);
         shader->setFloat(prefix + "outerCutOff", outerCutOff);
+    }
+
+    inline void setSpotLight(const SpotLight& light){
+        setSpotLight(
+                light.ambient, light.diffuse, light.specular,
+                light.constant, light.linear, light.quadratic,
+                light.cutOff, light.outerCutOff
+        );
     }
 
     void setSpotLightPosition(const glm::vec3& position, const glm::vec3& direction){

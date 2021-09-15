@@ -8381,7 +8381,7 @@ static void inline NavClampRectToVisibleAreaForMoveDir(ImGuiDir move_dir, ImRect
     }
 }
 
-// Scoring function for gamepad/keyboard directional navigation. Based on https://gist.github.com/rygorous/6981057
+// Scoring function for gamepad/keyboard direction navigation. Based on https://gist.github.com/rygorous/6981057
 static bool ImGui::NavScoreItem(ImGuiNavMoveResult* result, ImRect cand)
 {
     ImGuiContext& g = *GImGui;
@@ -8909,7 +8909,7 @@ static void ImGui::NavUpdate()
         g.NavActivateId = g.NavActivateDownId = g.NavActivatePressedId = g.NavInputId = g.NavNextActivateId;
     g.NavNextActivateId = 0;
 
-    // Initiate directional inputs request
+    // Initiate direction inputs request
     if (g.NavMoveRequestForward == ImGuiNavForward_None)
     {
         g.NavMoveDir = ImGuiDir_None;
@@ -8960,7 +8960,7 @@ static void ImGui::NavUpdate()
     // Scrolling
     if (g.NavWindow && !(g.NavWindow->Flags & ImGuiWindowFlags_NoNavInputs) && !g.NavWindowingTarget)
     {
-        // *Fallback* manual-scroll with Nav directional keys when window has no navigable item
+        // *Fallback* manual-scroll with Nav direction keys when window has no navigable item
         ImGuiWindow* window = g.NavWindow;
         const float scroll_speed = IM_ROUND(window->CalcFontSize() * 100 * io.DeltaTime); // We need round the scrolling speed because sub-pixel scroll isn't reliably supported.
         if (window->DC.NavLayerActiveMask == 0x00 && window->DC.NavHasScroll && g.NavMoveRequest)
@@ -9037,7 +9037,7 @@ static void ImGui::NavUpdateInitResult()
     g.NavWindow->NavRectRel[g.NavLayer] = g.NavInitResultRectRel;
 }
 
-// Apply result from previous frame navigation directional move request
+// Apply result from previous frame navigation direction move request
 static void ImGui::NavUpdateMoveResult()
 {
     ImGuiContext& g = *GImGui;
