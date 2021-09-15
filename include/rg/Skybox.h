@@ -12,7 +12,7 @@ private:
     Skybox(const Skybox& s) = delete;
     Skybox operator= (const Skybox& s) = delete;
 
-    unsigned int skyboxVAO, skyboxVBO;
+    unsigned int skyboxVAO, skyboxVBO, skyboxEBO;
     Shader skyboxShader;
     unsigned int cubemapTexture;
 
@@ -20,55 +20,35 @@ private:
         :skyboxShader("resources/shaders/skybox/skybox.vs", "resources/shaders/skybox/skybox.fs")
     {
         float skyboxVertices[] = {
-                // positions
-                -1.0f,  1.0f, -1.0f,
-                -1.0f, -1.0f, -1.0f,
-                1.0f, -1.0f, -1.0f,
-                1.0f, -1.0f, -1.0f,
-                1.0f,  1.0f, -1.0f,
-                -1.0f,  1.0f, -1.0f,
+                -1.0, -1.0, -1.0,
+                -1.0, -1.0,  1.0,
+                -1.0,  1.0, -1.0,
+                -1.0,  1.0,  1.0,
+                1.0, -1.0, -1.0,
+                1.0, -1.0,  1.0,
+                1.0,  1.0, -1.0,
+                1.0,  1.0,  1.0
+        };
 
-                -1.0f, -1.0f,  1.0f,
-                -1.0f, -1.0f, -1.0f,
-                -1.0f,  1.0f, -1.0f,
-                -1.0f,  1.0f, -1.0f,
-                -1.0f,  1.0f,  1.0f,
-                -1.0f, -1.0f,  1.0f,
-
-                1.0f, -1.0f, -1.0f,
-                1.0f, -1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f, -1.0f,
-                1.0f, -1.0f, -1.0f,
-
-                -1.0f, -1.0f,  1.0f,
-                -1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f, -1.0f,  1.0f,
-                -1.0f, -1.0f,  1.0f,
-
-                -1.0f,  1.0f, -1.0f,
-                1.0f,  1.0f, -1.0f,
-                1.0f,  1.0f,  1.0f,
-                1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f, -1.0f,
-
-                -1.0f, -1.0f, -1.0f,
-                -1.0f, -1.0f,  1.0f,
-                1.0f, -1.0f, -1.0f,
-                1.0f, -1.0f, -1.0f,
-                -1.0f, -1.0f,  1.0f,
-                1.0f, -1.0f,  1.0f
+        unsigned int skyboxIndices[] = {
+                2, 0, 4, 4, 6, 2,
+                1, 0, 2, 2, 3, 1,
+                4, 5, 7, 7, 6, 4,
+                1, 3, 7, 7, 5, 1,
+                2, 6, 7, 7, 3, 2,
+                0, 1, 4, 4, 1, 5
         };
 
         glGenVertexArrays(1, &skyboxVAO);
         glGenBuffers(1, &skyboxVBO);
+        glGenBuffers(1, &skyboxEBO);
         glBindVertexArray(skyboxVAO);
         glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skyboxEBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
+
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
@@ -135,7 +115,7 @@ public:
         glBindVertexArray(skyboxVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
     }
