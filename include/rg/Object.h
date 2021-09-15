@@ -30,15 +30,15 @@ public:
         }
     }
 
-    void setView(const glm::mat4& view){
+    static void setView(const glm::mat4& view){
         objectShader->use();
         objectShader->setMat4("view", view);
     }
-    void setProjection(const glm::mat4& projection){
+    static void setProjection(const glm::mat4& projection){
         objectShader->use();
         objectShader->setMat4("projection", projection);
     }
-    void setProjectionView(const glm::mat4& projection, const glm::mat4& view){
+    static void setProjectionView(const glm::mat4& projection, const glm::mat4& view){
         objectShader->use();
         objectShader->setMat4("view", view);
         objectShader->setMat4("projection", projection);
@@ -50,12 +50,12 @@ public:
         object.Draw(*objectShader);
     }
 
-    void setViewPos(const glm::vec3& viewPos){
+    static void setViewPos(const glm::vec3& viewPos){
         objectShader->use();
         objectShader->setVec3("viewPos", viewPos);
     }
 
-    void setDirectionalLight(const glm::vec3& direction, const glm::vec3& ambient,
+    static void setDirectionalLight(const glm::vec3& direction, const glm::vec3& ambient,
                              const glm::vec3& diffuse, const glm::vec3& specular){
         std::string prefix("dirLight.");
         objectShader->use();
@@ -65,7 +65,7 @@ public:
         objectShader->setVec3(prefix + "specular", specular);
     }
 
-    void setPointLight(unsigned int num, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
+    static void setPointLight(unsigned int num, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
                        float constant, float linear, float quadratic) {
         std::string prefix = "pointLights[" + std::to_string(num) + "].";
         objectShader->use();
@@ -77,20 +77,20 @@ public:
         objectShader->setFloat(prefix + "quadratic", quadratic);
     }
 
-    void setPointLight(unsigned int num, const LightCube& light){
+    static void setPointLight(unsigned int num, const LightCube& light){
         setPointLight(num, light.getLightColor() * light.getAmbient()
                 , light.getLightColor() * light.getDiffuse()
                 , light.getLightColor() * light.getSpecular()
                 , light.getConstant(), light.getLinear(), light.getQuadratic());
     }
 
-    void setPointLightPosition(unsigned int num, const glm::vec3& position){
+    static void setPointLightPosition(unsigned int num, const glm::vec3& position){
         std::string prefix = "pointLights[" + std::to_string(num) + "].";
         objectShader->use();
         objectShader->setVec3(prefix + "position", position);
     }
 
-    void setSpotLight(const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
+    static void setSpotLight(const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
                       float constant, float linear, float quadratic,
                       float cutOff, float outerCutOff){
         std::string prefix("spotLight.");
@@ -105,7 +105,7 @@ public:
         objectShader->setFloat(prefix + "outerCutOff", outerCutOff);
     }
 
-    void setSpotLightPosition(const glm::vec3& position, const glm::vec3& direction){
+    static void setSpotLightPosition(const glm::vec3& position, const glm::vec3& direction){
         std::string prefix("spotLight.");
         objectShader->use();
         objectShader->setVec3(prefix + "position", position);

@@ -31,7 +31,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f,2.0f,5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -83,22 +83,48 @@ int main() {
     glCullFace(GL_BACK);
     {
         //TODO
-        //backpack
-        Object backpack("resources/objects/cyborg/cyborg.obj");
-        backpack.setDirectionalLight(
-                    glm::vec3(-0.2f, -1.0f, -0.3f),
-                    glm::vec3(0.05f),
-                    glm::vec3(0.4f),
-                    glm::vec3(0.5f)
-                );
-        backpack.setSpotLight(
+
+        std::vector<glm::vec3> boxPositions({
+            glm::vec3(4.0f, 0.0f, 4.0f),
+            glm::vec3(4.0f, 0.0f, -4.0f),
+            glm::vec3(-4.0f, 0.0f, 4.0f),
+            glm::vec3(-4.0f, 0.0f, -4.0f)
+        });
+        //cyborg
+        Object cyborg("resources/objects/cyborg/cyborg.obj");
+
+        Object duck("resources/objects/duck/12248_Bird_v1_L2.obj");
+        Object::setDirectionalLight(
+                glm::vec3(-0.2f, -1.0f, -0.3f),
+                glm::vec3(0.05f),
+                glm::vec3(0.4f),
+                glm::vec3(0.5f)
+        );
+        Object::setSpotLight(
                 glm::vec3(0.0f),
                 glm::vec3(1.0f),
                 glm::vec3(1.0f),
                 1.0f, 0.09f, 0.032f,
                 glm::cos(glm::radians(12.5f)),
                 glm::cos(glm::radians(15.0f))
-                );
+        );
+
+        SimpleBox sb;
+        sb.setDirectionalLight(
+                glm::vec3(-0.2f, -1.0f, -0.3f),
+                glm::vec3(0.05f),
+                glm::vec3(0.4f),
+                glm::vec3(0.5f)
+        );
+        sb.setSpotLight(
+                glm::vec3(0.0f),
+                glm::vec3(1.0f),
+                glm::vec3(1.0f),
+                1.0f, 0.09f, 0.032f,
+                glm::cos(glm::radians(12.5f)),
+                glm::cos(glm::radians(15.0f))
+        );
+
         ComplexBox cb;
         cb.setDirectionalLight(
                 glm::vec3(-0.2f, -1.0f, -0.3f),
@@ -116,19 +142,22 @@ int main() {
         );
         //lights
         glm::vec3 pointLightPositions[] = {
-                glm::vec3( 0.7f,  0.2f,  2.0f),
+                glm::vec3( 2.0f,  2.0f,  2.0f),
                 glm::vec3( 2.3f, -3.3f, -4.0f),
-                glm::vec3(-4.0f,  2.0f, -12.0f),
+                glm::vec3(-4.0f,  2.0f, -6.0f),
                 glm::vec3( 0.0f,  0.0f, -3.0f)
         };
         LightCube lc;
         for(unsigned i = 0u; i != 4u; ++i) {
-            backpack.setPointLight(i, lc);
-            backpack.setPointLightPosition(i, pointLightPositions[i]);
+            Object::setPointLight(i, lc);
             cb.setPointLight(i, lc);
-            cb.setPointLightPosition(i, pointLightPositions[i]);
+            sb.setPointLight(i, lc);
         }
-
+        LightCube lc_red(glm::vec3(1.0f, 0.0f, 0.0f));
+        lc_red.setK(1.0f, 0.007f, 0.0002f);
+        Object::setPointLight(4, lc_red);
+        cb.setPointLight(4, lc_red);
+        sb.setPointLight(4, lc_red);
         // render loop
         // -----------
         while (!glfwWindowShouldClose(window)) {
@@ -148,28 +177,56 @@ int main() {
             lc.setProjectionView(getPerspective(), camera.GetViewMatrix());
             for(unsigned i = 0u; i != 4u; ++i){
                 glm::mat4 model(1.0f);
+                model = glm::rotate(model,currentFrame,glm::vec3(0.0,1.0,0.0));
                 model = glm::translate(model, pointLightPositions[i]);
                 model = glm::scale(model, glm::vec3(0.2f));
                 lc.render(model);
+                auto newPosition = glm::vec3 (model*glm::vec4(pointLightPositions[i],1.0));
+                cb.setPointLightPosition(i, newPosition);
+                sb.setPointLightPosition(i, newPosition);
+                Object::setPointLightPosition(i, newPosition);
+            }
+            {
+                glm::mat4 model(1.0f);
+                glm::vec3 start = glm::vec3(0.0f,3.0f,3.0f);
+                model = glm::rotate(model, currentFrame, glm::vec3(1.0, 0.0, 0.0));
+                model = glm::translate(model, start);
+                model = glm::scale(model, glm::vec3(0.05f));
+                lc_red.render(model);
+                auto newPosition = glm::vec3(model * glm::vec4(start, 1.0));
+                cb.setPointLightPosition(4, newPosition);
+                sb.setPointLightPosition(4, newPosition);
+                Object::setPointLightPosition(4, newPosition);
             }
 
-
-
-            backpack.setProjectionView(getPerspective(),camera.GetViewMatrix());
-            backpack.setViewPos(camera.Position);
-            backpack.setSpotLightPosition(camera.Position, camera.Front);
+            Object::setProjectionView(getPerspective(),camera.GetViewMatrix());
+            Object::setViewPos(camera.Position);
+            Object::setSpotLightPosition(camera.Position, camera.Front);
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::scale(model,glm::vec3(0.5));
-            backpack.render(model);
+            model = glm::scale(model,glm::vec3(0.8));
+            cyborg.render(model);
+
+            glm::mat4 model1 = glm::mat4(1.0f);
+            model1 = glm::rotate(model1,currentFrame/2.13f,glm::vec3(0.0,1.0,0.0));
+            model1 = glm::translate(model1,glm::vec3(3.0,0.0,3.0));
+            model1 = glm::rotate(model1,glm::radians(-90.0f),glm::vec3(1.0,0.0,0.0));
+            model1 = glm::rotate(model1,glm::radians(130.0f),glm::vec3(0.0,0.0,1.0));
+            model1 = glm::scale(model1,glm::vec3(0.02));
+            duck.render(model1);
 
             cb.setProjectionView(getPerspective(),camera.GetViewMatrix());
             cb.setViewPos(camera.Position);
             cb.setSpotLightPosition(camera.Position, camera.Front);
-            glm::mat4 model2 = glm::mat4(1.0f);
-            model2 = glm::translate(model2,glm::vec3(5.0));
-            model2 = glm::scale(model2,glm::vec3(2.0));
-            cb.render(model2);
-
+            sb.setProjectionView(getPerspective(),camera.GetViewMatrix());
+            sb.setViewPos(camera.Position);
+            sb.setSpotLightPosition(camera.Position, camera.Front);
+            for(auto& box : boxPositions) {
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, box);
+                sb.render(model);
+                model = glm::translate(model, glm::vec3(0.0f, 4.0f, 0.0f));
+                cb.render(model);
+            }
             Skybox::getSkybox().render(getPerspective(),camera.GetViewMatrix());
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
