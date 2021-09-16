@@ -43,6 +43,13 @@ inline glm::mat4 getPerspective(){
         return glm::perspective(glm::radians(camera.Zoom), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
 }
 bool mouseInScreen = true;
+
+enum CubeColor {
+    RED, GREEN, BLUE, NONE
+};
+
+CubeColor littleCubeColor = NONE;
+
 int main() {
     // glfw: initialize and configure
     // ------------------------------
@@ -85,6 +92,10 @@ int main() {
         const auto x_axis = glm::vec3(1.0f, 0.0f, 0.0f);
         const auto y_axis = glm::vec3(0.0f, 1.0f, 0.0f);
         const auto z_axis = glm::vec3(0.0f, 0.0f, 1.0f);
+        const auto red = glm::vec3(1.0f, 0.0f, 0.0f);
+        const auto green = glm::vec3(0.0f, 1.0f, 0.0f);
+        const auto blue = glm::vec3(0.0f, 0.0f, 1.0f);
+        const auto noColor = glm::vec3(0.0f);
         const auto identity = glm::mat4(1.0f);
 
 
@@ -144,7 +155,7 @@ int main() {
             sb.setPointLight(i, lc);
         }
 
-        LightCube lc_red(glm::vec3(1.0f, 0.0f, 0.0f));
+        LightCube lc_red(red);
         lc_red.setK(1.0f, 0.007f, 0.0002f);
         Object::setPointLight(pointLightPositions.size(), lc_red);
         cb.setPointLight(pointLightPositions.size(), lc_red);
@@ -178,10 +189,33 @@ int main() {
             }
 
 
-            {
-                //red light
-                lc_red.setProjectionView(perspective, view);
+            //red light
+            if(littleCubeColor == NONE){
+                if(lc_red.getLightColor() != noColor){
+                    lc_red.setLightColor(noColor);
+                    Object::setPointLight(pointLightPositions.size(), lc_red);
+                    cb.setPointLight(pointLightPositions.size(), lc_red);
+                    sb.setPointLight(pointLightPositions.size(), lc_red);
+                }
+            } else{
+                if(littleCubeColor == RED && lc_red.getLightColor() != red){
+                    lc_red.setLightColor(red);
+                    Object::setPointLight(pointLightPositions.size(), lc_red);
+                    cb.setPointLight(pointLightPositions.size(), lc_red);
+                    sb.setPointLight(pointLightPositions.size(), lc_red);
+                } else if(littleCubeColor == GREEN && lc_red.getLightColor() != green){
+                    lc_red.setLightColor(green);
+                    Object::setPointLight(pointLightPositions.size(), lc_red);
+                    cb.setPointLight(pointLightPositions.size(), lc_red);
+                    sb.setPointLight(pointLightPositions.size(), lc_red);
+                } else if(littleCubeColor == BLUE && lc_red.getLightColor() != blue){
+                    lc_red.setLightColor(blue);
+                    Object::setPointLight(pointLightPositions.size(), lc_red);
+                    cb.setPointLight(pointLightPositions.size(), lc_red);
+                    sb.setPointLight(pointLightPositions.size(), lc_red);
+                }
 
+                lc_red.setProjectionView(perspective, view);
                 auto model = glm::rotate(identity, currentFrame, x_axis);
                 model = glm::translate(model, rcPosition);
                 model = glm::scale(model, glm::vec3(0.05f));
@@ -267,6 +301,11 @@ void processInput(GLFWwindow *window) {
         camera.ProcessKeyboard(ROLL_LEFT, deltaTime);
     if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
         camera.ProcessKeyboard(ROLL_RIGHT, deltaTime);
+
+    if(glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) littleCubeColor = RED;
+    if(glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) littleCubeColor = GREEN;
+    if(glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) littleCubeColor = BLUE;
+    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) littleCubeColor = NONE;
 }
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
