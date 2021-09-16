@@ -10,10 +10,9 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+#include <iostream>
 #include <rg/Camera.h>
 #include <rg/Box.h>
-
-#include <iostream>
 #include <rg/Object.h>
 #include <rg/Skybox.h>
 
@@ -151,6 +150,7 @@ int main() {
         cb.setPointLight(pointLightPositions.size(), lc_red);
         sb.setPointLight(pointLightPositions.size(), lc_red);
 
+
         // render loop
         // -----------
         while (!glfwWindowShouldClose(window)) {
@@ -233,6 +233,7 @@ int main() {
                 model = glm::translate(model, y_axis * 4.0f);
                 cb.render(model);
             }
+
 
             //skybox
             Skybox::getSkybox().render(perspective, view);

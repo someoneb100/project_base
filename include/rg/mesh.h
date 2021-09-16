@@ -7,6 +7,7 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <utility>
 #include <vector>
 #include <rg/Error.h>
 struct Vertex {
@@ -31,11 +32,11 @@ public:
     std::vector<Texture> textures;
     std::string prefix;
 
-    Mesh(const std::vector<Vertex>& vs, const std::vector<unsigned int>& ind,
-         const std::vector<Texture>& tex)
-         : vertices(vs)
-         , indices(ind)
-         , textures(tex) {
+    Mesh(std::vector<Vertex>  vs, std::vector<unsigned int>  ind,
+         std::vector<Texture>  tex)
+         : vertices(std::move(vs))
+         , indices(std::move(ind))
+         , textures(std::move(tex)) {
         setupMesh();
     }
 
@@ -64,7 +65,6 @@ public:
             name.append(number);
             shader.setInt(prefix + name, i); // texture_diffuse1
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
-
         }
 
         //if (specularNr == 1u) shader.setInt(prefix + "texture_specular1", -1);
