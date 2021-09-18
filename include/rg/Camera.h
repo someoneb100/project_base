@@ -20,7 +20,7 @@ enum Camera_Movement {
 // Default camera values
 const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
-const float ROLL        = 0.0f;
+const float ROLL       =  0.0f;
 const float SPEED       =  2.5f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
@@ -35,6 +35,7 @@ public:
     glm::vec3 Front;
     glm::vec3 Up;
     glm::vec3 Right;
+    glm::vec3 WorldUp;
     // euler Angles
     float Yaw;
     float Pitch;
@@ -48,6 +49,7 @@ public:
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH, float roll = ROLL) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = position;
+        WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
         Roll = roll;
@@ -57,6 +59,7 @@ public:
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch, float roll) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = glm::vec3(posX, posY, posZ);
+        WorldUp = glm::vec3(upX, upY, upZ);
         Yaw = yaw;
         Pitch = pitch;
         Roll = roll;
@@ -64,10 +67,14 @@ public:
     }
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    inline glm::mat4 GetViewMatrix(){return glm::lookAt(Position, Position + Front, Up);}
+    glm::mat4 GetViewMatrix()
+    {
+        return glm::lookAt(Position, Position + Front, Up);
+    }
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-    void ProcessKeyboard(Camera_Movement direction, float deltaTime) {
+    void ProcessKeyboard(Camera_Movement direction, float deltaTime)
+    {
         float velocity = MovementSpeed * deltaTime;
         if (direction == FORWARD)
             Position += Front * velocity;
@@ -77,17 +84,19 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
-        velocity *= 35.0f;
+        if (direction == ROLL_RIGHT){
+            Roll += velocity;
+            UpdateRoll(velocity);
+        }
         if (direction == ROLL_LEFT) {
-            const auto r = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(-velocity), Front));
-            Right = r * Right;
-            Up = r * Up;
+            Roll -= velocity;
+            UpdateRoll(-velocity);
         }
-        if (direction == ROLL_RIGHT) {
-            const auto r = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(velocity), Front));
-            Right = r * Right;
-            Up = r * Up;
-        }
+    }
+    void UpdateRoll(float angle){
+        glm::mat4 mat = glm::rotate(glm::mat4(1.0f), angle, Front);
+        Up = glm::vec3(mat * glm::vec4(Up,1.0f));
+        Right = glm::vec3(mat * glm::vec4(Right,1.0f));
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -96,41 +105,46 @@ public:
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
 
+        Yaw   += xoffset;
+        Pitch += yoffset;
+
+        // make sure that when pitch is out of bounds, screen doesn't get flipped
+        if (constrainPitch)
         {
-            auto r = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(-xoffset), Up));
-            Right = r * Right;
-            Front = r * Front;
+            if (Pitch > 89.0f)
+                Pitch = 89.0f;
+            if (Pitch < -89.0f)
+                Pitch = -89.0f;
         }
 
-        {
-            auto r = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(yoffset), Right));
-            Up = r * Up;
-            Front = r * Front;
-        }
+        // update Front, Right and Up Vectors using the updated Euler angles
+        updateCameraVectors();
     }
 
-
-    inline void ProcessMouseScroll(float yoffset){Zoom = std::max(std::min(Zoom - (float)yoffset, 1.0f), 45.0f);}
+    // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
+    void ProcessMouseScroll(float yoffset)
+    {
+        Zoom -= (float)yoffset;
+        if (Zoom < 1.0f)
+            Zoom = 1.0f;
+        if (Zoom > 45.0f)
+            Zoom = 45.0f;
+    }
 
 private:
-     //calculates the front vector from the Camera's (updated) Euler Angles
+    // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
     {
-        glm::mat4 r = glm::mat4(1.0f);
-        r = glm::rotate(r, glm::radians(Roll), glm::vec3(0.0f, 1.0f, 0.0f));
-        r = glm::rotate(r, glm::radians(Pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-        r = glm::rotate(r, glm::radians(Yaw), glm::vec3(0.0f, 0.0f, 1.0f));
-
-        const auto rp = glm::mat3(r);
-
-        const auto front =  rp * glm::vec3(1.0f, 0.0f, 0.0f);
-        Front = glm::normalize(glm::vec3(front.x, front.z, front.y));
-
-        const auto right = rp * glm::vec3(0.0f, 1.0f, 0.0f);
-        Right = glm::normalize(glm::vec3(right.x, right.z, right.y));
-
-        const auto up = rp * glm::vec3(0.0f, 0.0f, 1.0f);
-        Up = glm::normalize(glm::vec3(up.x, up.z, up.y));
+        // calculate the new Front vector
+        glm::vec3 front;
+        front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        front.y = sin(glm::radians(Pitch));
+        front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        Front = glm::normalize(front);
+        // also re-calculate the Right and Up vector
+        Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+        Up    = glm::normalize(glm::cross(Right, Front));
+        UpdateRoll(Roll);
     }
 };
 #endif
