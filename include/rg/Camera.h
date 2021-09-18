@@ -84,6 +84,7 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+        velocity *= 30.0f;
         if (direction == ROLL_RIGHT){
             Roll += velocity;
             UpdateRoll(velocity);
@@ -94,7 +95,7 @@ public:
         }
     }
     void UpdateRoll(float angle){
-        glm::mat4 mat = glm::rotate(glm::mat4(1.0f), angle, Front);
+        glm::mat4 mat = glm::rotate(glm::mat4(1.0f), glm::radians(angle), Front);
         Up = glm::vec3(mat * glm::vec4(Up,1.0f));
         Right = glm::vec3(mat * glm::vec4(Right,1.0f));
     }
@@ -104,8 +105,8 @@ public:
     {
 
         auto oldx = xoffset;
-        xoffset = cos(Roll)*xoffset + sin(Roll)*yoffset;
-        yoffset = - sin(Roll)*oldx + cos(Roll)*yoffset;
+        xoffset = cos(glm::radians(Roll))*xoffset + sin(glm::radians(Roll))*yoffset;
+        yoffset = - sin(glm::radians(Roll))*oldx + cos(glm::radians(Roll))*yoffset;
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
 
