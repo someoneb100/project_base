@@ -102,6 +102,10 @@ public:
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {
+
+        auto oldx = xoffset;
+        xoffset = cos(Roll)*xoffset + sin(Roll)*yoffset;
+        yoffset = - sin(Roll)*oldx + cos(Roll)*yoffset;
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
 
